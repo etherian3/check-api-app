@@ -1,4 +1,4 @@
-# Capi — Open Public API Monitoring Platform
+# C.api — Open Public API Monitoring Platform
 
 A fullstack monorepo that monitors the health, uptime, and latency of public APIs from the [public-api-lists](https://github.com/public-api-lists/public-api-lists) repository.
 
