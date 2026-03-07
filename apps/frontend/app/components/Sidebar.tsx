@@ -33,7 +33,7 @@ export default function Sidebar() {
                         <Image src="/capi.png" alt="Capi Logo" width={36} height={36} style={{ objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <div style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '-0.015em', color: 'var(--text-1)' }}>Capi</div>
+                        <div style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '-0.015em', color: 'var(--text-1)' }}>C.api</div>
                         <div style={{ fontSize: '10px', color: 'var(--text-3)', letterSpacing: '0.04em', marginTop: '1px' }}>API Monitor</div>
                     </div>
                 </div>

@@ -24,8 +24,9 @@ export default function ApiDetailPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function load() {
+        async function load(isBackground = false) {
             try {
+                if (!isBackground) setLoading(true);
                 const [apiData, statsData, historyData] = await Promise.all([
                     getApi(apiId),
                     getApiStats(apiId),
@@ -35,13 +36,13 @@ export default function ApiDetailPage() {
                 setStats(statsData);
                 setHistory(historyData.data);
             } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : 'Failed to load');
+                if (!isBackground) setError(err instanceof Error ? err.message : 'Failed to load');
             } finally {
-                setLoading(false);
+                if (!isBackground) setLoading(false);
             }
         }
-        load();
-        const interval = setInterval(load, 30000);
+        load(false);
+        const interval = setInterval(() => load(true), 15000);
         return () => clearInterval(interval);
     }, [apiId]);
 

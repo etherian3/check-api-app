@@ -19,21 +19,21 @@ export default function ApisPage() {
     const [total, setTotal] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadApis = useCallback(async () => {
+    const loadApis = useCallback(async (isBackground = false) => {
         try {
-            setLoading(true);
+            if (!isBackground) setLoading(true);
             const result = await getApis({ search, category, page, limit: 30 });
             setApis(result.data);
             setTotalPages(result.pagination.total_pages);
             setTotal(result.pagination.total);
         } catch { setApis([]); }
-        finally { setLoading(false); }
+        finally { if (!isBackground) setLoading(false); }
     }, [search, category, page]);
 
-    useEffect(() => { loadApis(); }, [loadApis]);
+    useEffect(() => { loadApis(false); }, [loadApis]);
     useEffect(() => { getCategories().then(r => setCategories(r.categories)).catch(() => { }); }, []);
     useEffect(() => {
-        const i = setInterval(loadApis, 8000);
+        const i = setInterval(() => loadApis(true), 8000);
         return () => clearInterval(i);
     }, [loadApis]);
 
