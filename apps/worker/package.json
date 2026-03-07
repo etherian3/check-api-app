@@ -1,0 +1,20 @@
+{
+    "name": "@capi/worker",
+    "version": "1.0.0",
+    "description": "Capi Background Monitoring Worker",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "axios": "^1.6.0",
+        "bullmq": "^5.1.1",
+        "dotenv": "^16.3.1",
+        "ioredis": "^5.3.2",
+        "pg": "^8.11.3"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.2"
+    }
+}
