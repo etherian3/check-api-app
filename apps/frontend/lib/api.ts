@@ -1,8 +1,11 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-async function fetchAPI<T>(endpoint: string): Promise<T> {
-    const res = await fetch(`${API_BASE}${endpoint}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
+async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const res = await fetch(`${API_BASE}${endpoint}`, { cache: 'no-store', ...options });
+    if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        throw new Error(errBody || `API error: ${res.status}`);
+    }
     return res.json();
 }
 
@@ -14,6 +17,10 @@ export interface Api {
     auth_required: string;
     https_supported: boolean;
     base_url: string;
+    method: string;
+    headers: Record<string, string> | null;
+    body: string | null;
+    expected_status: number | null;
     created_at: string;
     total_checks: number;
     successful_checks: number;
@@ -21,6 +28,18 @@ export interface Api {
     current_status: 'UP' | 'DOWN' | 'UNKNOWN';
     last_checked_at: string | null;
     uptime_percentage: number | null;
+}
+
+export interface ApiFormData {
+    name: string;
+    description?: string;
+    category?: string;
+    base_url: string;
+    method: string;
+    headers?: string; // JSON string
+    body?: string;
+    expected_status?: number | string;
+    auth_required?: string;
 }
 
 export interface ApiStats {
@@ -84,6 +103,7 @@ export interface CategoryStat {
     down: string;
 }
 
+// ── Read ──────────────────────────────────────────────────────────────────────
 export async function getApis(params?: {
     search?: string;
     category?: string;
@@ -115,6 +135,34 @@ export async function getCategories(): Promise<{ categories: string[] }> {
     return fetchAPI('/apis/categories');
 }
 
+// ── Create / Update / Delete ──────────────────────────────────────────────────
+export async function createApi(data: ApiFormData): Promise<Api> {
+    return fetchAPI('/apis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateApi(id: number, data: ApiFormData): Promise<Api> {
+    return fetchAPI(`/apis/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteApi(id: number): Promise<{ message: string }> {
+    return fetchAPI(`/apis/${id}`, { method: 'DELETE' });
+}
+
+export async function triggerCheck(id: number): Promise<{
+    message: string; statusCode: number | null; latencyMs: number | null; success: boolean;
+}> {
+    return fetchAPI(`/apis/${id}/check`, { method: 'POST' });
+}
+
+// ── Stats / Overview ──────────────────────────────────────────────────────────
 export async function getOverviewStats(): Promise<OverviewStats> {
     return fetchAPI('/stats/overview');
 }
@@ -125,12 +173,4 @@ export async function getRecentActivity(): Promise<{ data: RecentActivity[] }> {
 
 export async function getCategoryStats(): Promise<{ data: CategoryStat[] }> {
     return fetchAPI('/stats/categories');
-}
-
-export async function importApis(): Promise<{
-    message: string; imported: number; skipped: number; total: number;
-}> {
-    const res = await fetch(`${API_BASE}/import-apis`, { method: 'POST' });
-    if (!res.ok) throw new Error('Import failed');
-    return res.json();
 }

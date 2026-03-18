@@ -1,7 +1,56 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
-const { importApis } = require('../services/importer');
+const axios = require('axios');
+const REQUEST_TIMEOUT = parseInt(process.env.REQUEST_TIMEOUT) || 10000;
+
+// ─── Helper: run one HTTP check against an API ────────────────────────────────
+async function runCheck(api) {
+    const { id: apiId, name, base_url, method = 'GET', headers, body, expected_status } = api;
+    const start = Date.now();
+    let statusCode = null;
+    let latencyMs = null;
+    let success = false;
+    let errorMessage = null;
+
+    try {
+        const reqHeaders = {
+            'User-Agent': 'Capi-Monitor/1.0',
+            'Accept': 'application/json, text/plain, */*',
+            ...(headers || {}),
+        };
+        const response = await axios({
+            method: (method || 'GET').toLowerCase(),
+            url: base_url,
+            headers: reqHeaders,
+            data: body || undefined,
+            timeout: REQUEST_TIMEOUT,
+            validateStatus: () => true,
+            maxRedirects: 5,
+        });
+        latencyMs = Date.now() - start;
+        statusCode = response.status;
+        if (expected_status) {
+            success = statusCode === parseInt(expected_status);
+        } else {
+            success = statusCode >= 200 && statusCode < 400;
+        }
+        if (!success) errorMessage = `HTTP ${statusCode}`;
+    } catch (err) {
+        latencyMs = Date.now() - start;
+        if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') errorMessage = 'Request timeout';
+        else if (err.code === 'ENOTFOUND') errorMessage = 'DNS lookup failed';
+        else if (err.code === 'ECONNREFUSED') errorMessage = 'Connection refused';
+        else if (err.response) { statusCode = err.response.status; errorMessage = `HTTP ${statusCode}`; }
+        else errorMessage = err.message?.substring(0, 255) || 'Unknown error';
+    }
+
+    await query(
+        `INSERT INTO api_checks (api_id, status_code, latency_ms, success, error_message, checked_at) VALUES ($1, $2, $3, $4, $5, NOW())`,
+        [apiId, statusCode, latencyMs, success, errorMessage]
+    );
+    return { statusCode, latencyMs, success, errorMessage };
+}
 
 // ─── GET /api/apis ───────────────────────────────────────────────────────────
 // Returns all APIs with latest status, uptime %, avg latency
@@ -30,14 +79,9 @@ router.get('/apis', async (req, res) => {
 
         const apisResult = await query(
             `SELECT
-        a.id,
-        a.name,
-        a.description,
-        a.category,
-        a.auth_required,
-        a.https_supported,
-        a.base_url,
-        a.created_at,
+        a.id, a.name, a.description, a.category, a.auth_required,
+        a.https_supported, a.base_url, a.method, a.headers, a.body,
+        a.expected_status, a.created_at,
         COUNT(ac.id) AS total_checks,
         SUM(CASE WHEN ac.success = true THEN 1 ELSE 0 END) AS successful_checks,
         ROUND(AVG(ac.latency_ms)) AS avg_latency_ms,
@@ -47,12 +91,11 @@ router.get('/apis', async (req, res) => {
       LEFT JOIN api_checks ac ON ac.api_id = a.id
       ${whereClause}
       GROUP BY a.id
-      ORDER BY a.name ASC
+      ORDER BY a.created_at DESC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
             [...params, parseInt(limit), offset]
         );
 
-        // Count total for pagination
         const countResult = await query(
             `SELECT COUNT(*) FROM apis a ${whereClause}`,
             params
@@ -108,6 +151,112 @@ router.get('/apis/:id', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch API' });
+    }
+});
+
+// ─── POST /api/apis ──────────────────────────────────────────────────────────
+router.post('/apis', async (req, res) => {
+    try {
+        const { name, description, category, base_url, method = 'GET', headers, body, expected_status, auth_required } = req.body;
+        if (!name || !base_url) {
+            return res.status(400).json({ error: 'name and base_url are required' });
+        }
+        // Validate URL
+        try { new URL(base_url); } catch { return res.status(400).json({ error: 'Invalid URL' }); }
+        // Validate method
+        const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
+        if (!validMethods.includes((method || '').toUpperCase())) {
+            return res.status(400).json({ error: 'Invalid HTTP method' });
+        }
+        // Validate headers JSON
+        let parsedHeaders = null;
+        if (headers) {
+            if (typeof headers === 'string') {
+                try { parsedHeaders = JSON.parse(headers); } catch { return res.status(400).json({ error: 'headers must be valid JSON' }); }
+            } else {
+                parsedHeaders = headers;
+            }
+        }
+        const https_supported = base_url.startsWith('https');
+        const result = await query(
+            `INSERT INTO apis (name, description, category, base_url, method, headers, body, expected_status, auth_required, https_supported)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+             RETURNING *`,
+            [name, description || null, category || null, base_url.trim(),
+             (method || 'GET').toUpperCase(), parsedHeaders ? JSON.stringify(parsedHeaders) : null,
+             body || null, expected_status || null, auth_required || 'No', https_supported]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('[POST /apis]', err);
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'An API with this URL and method already exists' });
+        }
+        res.status(500).json({ error: 'Failed to create API' });
+    }
+});
+
+// ─── PUT /api/apis/:id ───────────────────────────────────────────────────────
+router.put('/apis/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, category, base_url, method, headers, body, expected_status, auth_required } = req.body;
+        if (!name || !base_url) {
+            return res.status(400).json({ error: 'name and base_url are required' });
+        }
+        try { new URL(base_url); } catch { return res.status(400).json({ error: 'Invalid URL' }); }
+        let parsedHeaders = null;
+        if (headers) {
+            if (typeof headers === 'string') {
+                try { parsedHeaders = JSON.parse(headers); } catch { return res.status(400).json({ error: 'headers must be valid JSON' }); }
+            } else {
+                parsedHeaders = headers;
+            }
+        }
+        const https_supported = base_url.startsWith('https');
+        const result = await query(
+            `UPDATE apis SET name=$1, description=$2, category=$3, base_url=$4, method=$5,
+             headers=$6, body=$7, expected_status=$8, auth_required=$9, https_supported=$10
+             WHERE id=$11 RETURNING *`,
+            [name, description || null, category || null, base_url.trim(),
+             (method || 'GET').toUpperCase(), parsedHeaders ? JSON.stringify(parsedHeaders) : null,
+             body || null, expected_status || null, auth_required || 'No', https_supported, id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'API not found' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('[PUT /apis/:id]', err);
+        res.status(500).json({ error: 'Failed to update API' });
+    }
+});
+
+// ─── DELETE /api/apis/:id ─────────────────────────────────────────────────────
+router.delete('/apis/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await query('DELETE FROM api_checks WHERE api_id = $1', [id]);
+        const result = await query('DELETE FROM apis WHERE id = $1 RETURNING id, name', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'API not found' });
+        res.json({ message: `API "${result.rows[0].name}" deleted successfully` });
+    } catch (err) {
+        console.error('[DELETE /apis/:id]', err);
+        res.status(500).json({ error: 'Failed to delete API' });
+    }
+});
+
+// ─── POST /api/apis/:id/check ─────────────────────────────────────────────────
+// Trigger an on-demand check immediately
+router.post('/apis/:id/check', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const apiResult = await query('SELECT * FROM apis WHERE id = $1', [id]);
+        if (apiResult.rows.length === 0) return res.status(404).json({ error: 'API not found' });
+        const api = apiResult.rows[0];
+        const result = await runCheck(api);
+        res.json({ message: 'Check completed', ...result });
+    } catch (err) {
+        console.error('[POST /apis/:id/check]', err);
+        res.status(500).json({ error: 'Check failed' });
     }
 });
 
@@ -202,20 +351,7 @@ router.get('/apis/:id/history', async (req, res) => {
     }
 });
 
-// ─── POST /api/import-apis ───────────────────────────────────────────────────
-router.post('/import-apis', async (req, res) => {
-    try {
-        console.log('[POST /import-apis] Starting import...');
-        const result = await importApis();
-        res.json({
-            message: 'Import completed successfully',
-            ...result,
-        });
-    } catch (err) {
-        console.error('[POST /import-apis]', err);
-        res.status(500).json({ error: 'Import failed', message: err.message });
-    }
-});
+
 
 // ─── GET /api/stats/overview ──────────────────────────────────────────────────
 // Counts unique APIs by their LATEST check result (not all checks)

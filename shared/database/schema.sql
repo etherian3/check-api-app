@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS api_checks CASCADE;
 DROP TABLE IF EXISTS apis CASCADE;
 
--- APIs table: stores imported public APIs
+-- APIs table: stores manually added API endpoints to monitor
 CREATE TABLE apis (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -11,8 +11,12 @@ CREATE TABLE apis (
   auth_required VARCHAR(50) DEFAULT 'No',
   https_supported BOOLEAN DEFAULT true,
   base_url TEXT,
+  method VARCHAR(10) NOT NULL DEFAULT 'GET',
+  headers JSONB,
+  body TEXT,
+  expected_status INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(base_url)
+  UNIQUE(base_url, method)
 );
 
 -- Index for efficient filtering by category

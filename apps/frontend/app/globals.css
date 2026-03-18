@@ -433,3 +433,52 @@ body {
   cursor: pointer;
   transition: background .15s;
 }
+
+/* ── Alias: glass-card → g-card ──────────────────────── */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+}
+
+/* ── Uptime bar ──────────────────────────────────────── */
+.uptime-bar {
+  height: 5px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.uptime-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .6s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── CSS var aliases used by detail page ─────────────── */
+:root {
+  --text-muted: var(--text-3);
+  --text-secondary: var(--text-2);
+  --accent-green: var(--green);
+  --accent-red: var(--red);
+  --accent-blue: var(--blue);
+  --accent-yellow: var(--amber);
+  --accent-purple: var(--purple);
+  --accent-cyan: var(--cyan);
+}
+
+/* ── Gradient text alias ─────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #4a9eff, #05d0f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Spin animation ──────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

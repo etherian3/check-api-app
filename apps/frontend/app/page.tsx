@@ -1,9 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { Globe, TrendingUp, TrendingDown, Zap, Activity, Github, CheckCircle2, XCircle, HelpCircle, Download, ArrowRight } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Zap, Activity, CheckCircle2, XCircle, HelpCircle, Plus, ArrowRight } from 'lucide-react';
 import { useSSE } from '../lib/useSSE';
-import { useState } from 'react';
-import { importApis } from '../lib/api';
 import LiveIndicator from './components/LiveIndicator';
 
 function timeAgo(dt: string) {
@@ -36,17 +34,6 @@ function UptimeRing({ pct }: { pct: number }) {
 
 export default function DashboardPage() {
   const { data, status } = useSSE();
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<{ ok: boolean; msg: string } | null>(null);
-
-  async function handleImport() {
-    setImporting(true); setImportResult(null);
-    try {
-      const r = await importApis();
-      setImportResult({ ok: true, msg: `Imported ${r.imported} new APIs (${r.skipped} skipped)` });
-    } catch { setImportResult({ ok: false, msg: 'Import failed. Is the backend running?' }); }
-    finally { setImporting(false); }
-  }
 
   const stats = data?.overview ?? null;
   const activity = data?.activity ?? [];
@@ -76,7 +63,7 @@ export default function DashboardPage() {
             <span className="gt-blue">Monitoring</span> Dashboard
           </h1>
           <p style={{ color: 'var(--text-3)', fontSize: '13px', marginTop: '4px' }}>
-            Real-time health for public APIs — updates every 5s
+            Real-time health for your APIs — updates every 5s
           </p>
         </div>
         <LiveIndicator status={status} />
@@ -104,39 +91,23 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ── Middle row: Import + Categories ── */}
+      {/* ── Middle row: Add API + Categories ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '14px', marginBottom: '20px' }}>
 
-        {/* Import card */}
+        {/* Add API card */}
         <div className="g-card" style={{ padding: '22px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <div className="icon-ring" style={{ background: 'rgba(74,158,255,0.1)' }}>
-              <Download size={17} color="var(--blue)" strokeWidth={1.9} />
+              <Plus size={17} color="var(--blue)" strokeWidth={1.9} />
             </div>
-            <div style={{ fontSize: '15px', fontWeight: '700' }}>Import APIs</div>
+            <div style={{ fontSize: '15px', fontWeight: '700' }}>Monitor an API</div>
           </div>
           <p style={{ color: 'var(--text-3)', fontSize: '13px', marginBottom: '18px', lineHeight: 1.65 }}>
-            Fetch from{' '}
-            <a href="https://github.com/public-api-lists/public-api-lists" target="_blank"
-              style={{ color: 'var(--blue)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              public-api-lists <Github size={11} />
-            </a>
+            Add any REST API endpoint manually — set a custom method, headers, and expected status code for precise monitoring.
           </p>
-          <button className="btn-primary" onClick={handleImport} disabled={importing}>
-            <Download size={14} />{importing ? 'Importing…' : 'Import from GitHub'}
-          </button>
-          {importResult && (
-            <div style={{
-              marginTop: '12px', padding: '10px 13px', borderRadius: '9px', fontSize: '12.5px',
-              background: importResult.ok ? 'rgba(34,212,126,0.08)' : 'rgba(240,94,106,0.08)',
-              border: `1px solid ${importResult.ok ? 'rgba(34,212,126,0.2)' : 'rgba(240,94,106,0.2)'}`,
-              color: importResult.ok ? '#22d47e' : '#f05e6a',
-              display: 'flex', alignItems: 'center', gap: '8px'
-            }}>
-              {importResult.ok ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-              {importResult.msg}
-            </div>
-          )}
+          <Link href="/apis" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex' }}>
+            <Plus size={14} /> Add API Endpoint
+          </Link>
         </div>
 
         {/* Categories card */}
@@ -164,7 +135,7 @@ export default function DashboardPage() {
               );
             })}
             {categories.length === 0 && (
-              <span style={{ color: 'var(--text-3)', fontSize: '13px' }}>No checks yet — worker monitoring APIs…</span>
+              <span style={{ color: 'var(--text-3)', fontSize: '13px' }}>No data yet — add APIs and let the worker run…</span>
             )}
           </div>
 
@@ -186,7 +157,10 @@ export default function DashboardPage() {
 
         {activity.length === 0 ? (
           <div style={{ padding: '44px', textAlign: 'center', color: 'var(--text-3)', fontSize: '13.5px' }}>
-            Waiting for first check cycle…
+            <Plus size={28} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.25 }} />
+            No activity yet —{' '}
+            <Link href="/apis" style={{ color: 'var(--blue)', textDecoration: 'none' }}>add your first API</Link>
+            {' '}to start monitoring.
           </div>
         ) : activity.map((a, i) => (
           <Link key={a.id} href={`/apis/${a.api_id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>

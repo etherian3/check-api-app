@@ -5,10 +5,10 @@ const REQUEST_TIMEOUT = parseInt(process.env.REQUEST_TIMEOUT) || 10000;
 
 /**
  * Process a single API monitoring job.
- * Job data: { apiId, baseUrl, name }
+ * Job data: { apiId, baseUrl, name, method, headers, body, expectedStatus }
  */
 async function processMonitoringJob(job) {
-    const { apiId, baseUrl, name } = job.data;
+    const { apiId, baseUrl, name, method = 'GET', headers, body, expectedStatus } = job.data;
     const start = Date.now();
 
     let statusCode = null;
@@ -17,19 +17,31 @@ async function processMonitoringJob(job) {
     let errorMessage = null;
 
     try {
-        const response = await axios.get(baseUrl, {
+        const reqHeaders = {
+            'User-Agent': 'Capi-Monitor/1.0',
+            'Accept': 'application/json, text/plain, */*',
+            ...(headers || {}),
+        };
+
+        const response = await axios({
+            method: (method || 'GET').toLowerCase(),
+            url: baseUrl,
+            headers: reqHeaders,
+            data: body || undefined,
             timeout: REQUEST_TIMEOUT,
             validateStatus: () => true, // Don't throw on non-2xx
-            headers: {
-                'User-Agent': 'Capi-Monitor/1.0',
-                'Accept': 'application/json, text/plain, */*',
-            },
             maxRedirects: 5,
         });
 
         latencyMs = Date.now() - start;
         statusCode = response.status;
-        success = statusCode >= 200 && statusCode < 400;
+
+        // Success determined by expected_status or default 2xx/3xx
+        if (expectedStatus) {
+            success = statusCode === parseInt(expectedStatus);
+        } else {
+            success = statusCode >= 200 && statusCode < 400;
+        }
 
         if (!success) {
             errorMessage = `HTTP ${statusCode}`;
@@ -61,7 +73,7 @@ async function processMonitoringJob(job) {
     );
 
     const status = success ? '✅' : '❌';
-    console.log(`${status} [${name}] status=${statusCode ?? 'N/A'} latency=${latencyMs}ms${errorMessage ? ` error="${errorMessage}"` : ''}`);
+    console.log(`${status} [${name}] ${method} status=${statusCode ?? 'N/A'} latency=${latencyMs}ms${errorMessage ? ` error="${errorMessage}"` : ''}`);
 
     return { apiId, statusCode, latencyMs, success };
 }
