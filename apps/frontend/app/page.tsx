@@ -63,7 +63,7 @@ export default function DashboardPage() {
             <span className="gt-blue">Monitoring</span> Dashboard
           </h1>
           <p style={{ color: 'var(--text-3)', fontSize: '13px', marginTop: '4px' }}>
-            Real-time health for your APIs — updates every 5s
+            Real-time health for your APIs — updates every 60s
           </p>
         </div>
         <LiveIndicator status={status} />
