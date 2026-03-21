@@ -317,7 +317,7 @@ export default function ApisPage() {
                         <span className="gt-blue">Monitored</span> APIs
                     </h1>
                     <p style={{ color: 'var(--text-3)', fontSize: '13.5px' }}>
-                        {total.toLocaleString()} APIs tracked · updates every 8s
+                        {total.toLocaleString()} APIs tracked · updates every 60s
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
