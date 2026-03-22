@@ -12,15 +12,17 @@ RUN npm install --omit=dev
 FROM node:22-alpine AS production
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node . .
+
+USER node
 
 ENV NODE_ENV=production
 ENV HOSTNAME="0.0.0.0"
-ENV PORT=3001
+# ENV PORT=3002
 ENV REDIS_URL=redis://redis:6379
 
-EXPOSE 3001
+# EXPOSE 3002
 
 CMD ["node", "src/index.js"]
  
