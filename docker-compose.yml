@@ -31,6 +31,38 @@ services:
       timeout: 5s
       retries: 5
 
+  frontend:
+    build: ./apps/frontend
+    container_name: capi-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./apps/backend
+    container_name: capi-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - worker
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://capi:capi_password@postgres:5432/capi_db
+    
+
+  worker:
+    build: ./apps/worker
+    container_name: capi-worker
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://capi:capi_password@postgres:5432/capi_db
+
+    
+
 volumes:
   postgres_data:
   redis_data:
