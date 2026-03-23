@@ -66,7 +66,7 @@ export default function Sidebar() {
                 <div className="sec-label" style={{ padding: '4px 10px 5px' }}>Resources</div>
 
                 {[
-                    { href: SOURCE_GITHUB, label: 'API Source List' },
+                    // { href: SOURCE_GITHUB, label: 'API Source List' },
                     { href: PROJECT_GITHUB, label: 'This Project' },
                 ].map(({ href, label }) => (
                     <a key={href} href={href} target="_blank" rel="noreferrer" style={{
