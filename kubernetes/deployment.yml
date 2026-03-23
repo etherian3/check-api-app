@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capi-frontend
+  labels:
+    app: capi-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: capi-frontend
+  template:
+    metadata:
+      labels:
+        app: capi-frontend
+    spec:
+      containers:
+      - name: capi-frontend
+        image: etheriannn/capi-frontend:FRONTEND_VERSION
+        # Image will be automatically updated by CI/CD pipeline
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: dockerhub-secret
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capi-backend
+  labels:
+    app: capi-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: capi-backend
+  template:
+    metadata:
+      labels:
+        app: capi-backend
+    spec:
+      containers:
+      - name: capi-backend
+        image: etheriannn/capi-backend:BACKEND_VERSION
+        # Image will be automatically updated by CI/CD pipeline
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: dockerhub-secret
+
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capi-worker
+  labels:
+    app: capi-worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: capi-worker
+  template:
+    metadata:
+      labels:
+        app: capi-worker
+    spec:
+      containers:
+      - name: capi-worker
+        image: etheriannn/capi-worker:WORKER_VERSION
+        # Image will be automatically updated by CI/CD pipeline
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: dockerhub-secret
