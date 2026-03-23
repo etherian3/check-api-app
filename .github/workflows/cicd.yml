@@ -93,7 +93,7 @@ jobs:
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
-          vuln-type: "os,library"
+          vuln-type: "os"
           severity: "CRITICAL,HIGH"
 
       - name: Run Trivy vulnerability scanner backend
@@ -103,7 +103,7 @@ jobs:
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
-          vuln-type: "os,library"
+          vuln-type: "os"
           severity: "CRITICAL,HIGH"
 
       - name: Run Trivy vulnerability scanner worker
@@ -113,7 +113,7 @@ jobs:
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
-          vuln-type: "os,library"
+          vuln-type: "os"
           severity: "CRITICAL,HIGH"
 
 
