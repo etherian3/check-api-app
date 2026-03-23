@@ -131,12 +131,19 @@ jobs:
     update-k8s:
       needs: docker
       runs-on: ubuntu-latest
+      permissions:
+        contents: write
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN}}
+
+      - name: Setup Git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
       - name: Update K8s Manifest
         run: |
