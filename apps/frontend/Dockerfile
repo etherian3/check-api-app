@@ -18,6 +18,8 @@ RUN NEXT_TELEMETRY_DISABLED=1 npm run build
 
 # STAGE 3: Production image & Copy 
 FROM node:22-alpine AS production
+RUN apk update && apk upgrade --no-cache
+
 WORKDIR /app
 
 ENV NODE_ENV=production

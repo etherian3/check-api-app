@@ -10,6 +10,7 @@ RUN npm install --omit=dev
 
 # STAGE 2: Production
 FROM node:22-alpine AS production
+RUN apk update && apk upgrade --no-cache
 
 WORKDIR /app
 

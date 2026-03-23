@@ -10,6 +10,8 @@ RUN npm install --omit=dev
 
 # STAGE 2: Production
 FROM node:22-alpine AS production
+RUN apk update && apk upgrade --no-cache
+
 WORKDIR /app
 
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
