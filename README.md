@@ -17,9 +17,9 @@
 │  │  SSE stream    Add/Edit/     Check Now               │   │
 │  │  (live update) Delete APIs   Edit/Delete             │   │
 │  └────────┬─────────────────────────┬───────────────────┘   │
-└───────────│─────────────────────────│──────────────────────┘
+└───────────│─────────────────────────│────────────────────── ┘
             │ HTTP(REST)              │ HTTP(REST)
-            ▼                        ▼
+            ▼                         ▼
 ┌───────────────────────────────────────────────────────────┐
 │              Express.js Backend (port 3001)               │
 │                                                           │
@@ -36,7 +36,7 @@
 │           PostgreSQL Database (port 5432)                 │
 │                                                           │
 │  apis        → API configs (url, method, headers, ...)    │
-│  api_checks  → Check history (status, latency, ...)      │
+│  api_checks  → Check history (status, latency, ...)       │
 └───────────────────────────────────────────────────────────┘
                 ▲
                 │ writes results
