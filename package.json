@@ -10,7 +10,7 @@
     "shared/database"
   ],
   "scripts": {
-    "lint": "npm run lint --workspace --if-present",
+    "lint": "npm run lint --workspaces --if-present",
     "build": "npm run build --workspace=apps/frontend",
     "dev:backend": "npm run dev --workspace=apps/backend",
     "dev:worker": "npm run dev --workspace=apps/worker",
