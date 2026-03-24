@@ -66,6 +66,11 @@ spec:
         image: etheriannn/capi-backend:23449134343
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: capi-secrets
+        - configMapRef:
+            name: capi-configs
         ports:
         - containerPort: 3001
         resources:
