@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: capi-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: capi.etherian.dev
+    http: 
+      paths:
+      - path: /api 
+        pathType: Prefix
+        backend:
+          service:
+            name: capi-backend
+            port:
+              number: 3001
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: capi-frontend
+            port:
+              number: 80
