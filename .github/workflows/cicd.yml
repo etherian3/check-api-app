@@ -7,12 +7,16 @@ on:
       - "**/*.md"
       - "kubernetes/*.yml" # mencegah infinite loop
       - ".github/workflows/cicd.yml"
+      - "iac/terraform/*.tfvars"
+      - "iac/ansible/*.yml"
   pull_request:
     branches: [ "main"]
     paths-ignore:
       - "**/*.md"
       - "kubernetes/*.yml" # mencegah infinite loop
       - ".github/workflows/cicd.yml"
+      - "iac/terraform/*.tfvars"
+      - "iac/ansible/*.yml"
 
 jobs:
 
