@@ -5,12 +5,14 @@ on:
     branches: [ "main"]
     paths-ignore:
       - "**/*.md"
-      - "kubernetes/**" # mencegah infinite loop
+      - "kubernetes/*.yml" # mencegah infinite loop
+      - ".github/workflows/cicd.yml"
   pull_request:
     branches: [ "main"]
     paths-ignore:
       - "**/*.md"
-      - "kubernetes/**" # mencegah infinite loop
+      - "kubernetes/*.yml" # mencegah infinite loop
+      - ".github/workflows/cicd.yml"
 
 jobs:
 
