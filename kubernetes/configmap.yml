@@ -4,4 +4,4 @@ metadata:
   name: capi-configs
 data:
   NODE_ENV: "production"
-  NEXT_PUBLIC_API_URL: "http://api.capi.etherian.dev"
+  NEXT_PUBLIC_API_URL: "http://capi.etherian.dev/api"
