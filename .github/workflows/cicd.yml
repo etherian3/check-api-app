@@ -76,6 +76,8 @@ jobs:
           push: false
           tags: ${{ secrets.DOCKER_USERNAME }}/capi-frontend:${{ github.run_id }}
           load: true
+          build-args: NEXT_PUBLIC_API_URL=https://capi.etherian.dev/api
+
 
       - name: Build backend image
         uses: docker/build-push-action@v6
