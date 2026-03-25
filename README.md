@@ -87,13 +87,13 @@ migrate.js     → DB migration script (adds new columns to existing DB)
 
 ## Tech Stack
 
-| Layer    | Tech                                      |
-|----------|-------------------------------------------|
-| Frontend | Next.js 15, Recharts, SSE                 |
-| Backend  | Node.js, Express.js, pg, Axios            |
-| Worker   | BullMQ, ioredis, Axios                    |
-| Database | PostgreSQL 16                             |
-| Queue    | Redis 7                                   |
+| Layer    | Tech                           |
+| -------- | ------------------------------ |
+| Frontend | Next.js 15, Recharts, SSE      |
+| Backend  | Node.js, Express.js, pg, Axios |
+| Worker   | BullMQ, ioredis, Axios         |
+| Database | PostgreSQL 16                  |
+| Queue    | Redis 7                        |
 
 ---
 
@@ -122,11 +122,13 @@ BACKEND_PORT=3001
 ### 3. Init Database
 
 **Fresh install:**
+
 ```bash
 docker exec capi-postgres psql -U capi -d capi_db -f /dev/stdin < shared/database/schema.sql
 ```
 
 **Existing DB (add new columns):**
+
 ```bash
 node migrate.js
 ```
@@ -163,15 +165,15 @@ Open **http://localhost:3000**
 2. Click **"+ Add API"**
 3. Fill in the form:
 
-| Field | Example |
-|---|---|
-| Name | `GitHub API Status` |
-| Endpoint URL | `https://api.github.com` |
-| Method | `GET` |
-| Category | `Developer Tools` |
-| Expected Status | `200` *(optional, default: any 2xx/3xx)* |
-| Custom Headers | `{"Authorization": "Bearer token"}` *(optional)* |
-| Request Body | `{"key": "value"}` *(optional, POST/PUT only)* |
+| Field           | Example                                          |
+| --------------- | ------------------------------------------------ |
+| Name            | `GitHub API Status`                              |
+| Endpoint URL    | `https://api.github.com`                         |
+| Method          | `GET`                                            |
+| Category        | `Developer Tools`                                |
+| Expected Status | `200` _(optional, default: any 2xx/3xx)_         |
+| Custom Headers  | `{"Authorization": "Bearer token"}` _(optional)_ |
+| Request Body    | `{"key": "value"}` _(optional, POST/PUT only)_   |
 
 4. Click **"Add API"** → the worker will monitor it automatically every 60 seconds
 5. Click **"Check Now"** on the detail page to trigger an immediate check
@@ -180,27 +182,27 @@ Open **http://localhost:3000**
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET    | `/api/apis` | List all APIs (search, filter, paginate) |
-| POST   | `/api/apis` | **Add a new API** |
-| GET    | `/api/apis/:id` | Single API details |
-| PUT    | `/api/apis/:id` | **Edit an API** |
-| DELETE | `/api/apis/:id` | **Delete an API** |
-| POST   | `/api/apis/:id/check` | **On-demand check** |
-| GET    | `/api/apis/:id/stats` | Uptime, latency, error rate |
-| GET    | `/api/apis/:id/history` | Check history (paginated) |
-| GET    | `/api/apis/categories` | All categories |
-| GET    | `/api/stats/overview` | Dashboard summary |
-| GET    | `/api/stats/recent-activity` | Last 20 checks |
-| GET    | `/api/stream` | SSE live data stream |
+| Method | Endpoint                     | Description                              |
+| ------ | ---------------------------- | ---------------------------------------- |
+| GET    | `/api/apis`                  | List all APIs (search, filter, paginate) |
+| POST   | `/api/apis`                  | **Add a new API**                        |
+| GET    | `/api/apis/:id`              | Single API details                       |
+| PUT    | `/api/apis/:id`              | **Edit an API**                          |
+| DELETE | `/api/apis/:id`              | **Delete an API**                        |
+| POST   | `/api/apis/:id/check`        | **On-demand check**                      |
+| GET    | `/api/apis/:id/stats`        | Uptime, latency, error rate              |
+| GET    | `/api/apis/:id/history`      | Check history (paginated)                |
+| GET    | `/api/apis/categories`       | All categories                           |
+| GET    | `/api/stats/overview`        | Dashboard summary                        |
+| GET    | `/api/stats/recent-activity` | Last 20 checks                           |
+| GET    | `/api/stream`                | SSE live data stream                     |
 
 ---
 
 ## Dashboard Pages
 
-| Page | URL | Description |
-|------|-----|-------------|
-| Dashboard | `/` | Overview stats, uptime ring, recent activity |
-| APIs List | `/apis` | All monitored APIs — add, edit, delete, filter |
-| API Detail | `/apis/:id` | Charts, stats, history, Check Now button |
+| Page       | URL         | Description                                    |
+| ---------- | ----------- | ---------------------------------------------- |
+| Dashboard  | `/`         | Overview stats, uptime ring, recent activity   |
+| APIs List  | `/apis`     | All monitored APIs — add, edit, delete, filter |
+| API Detail | `/apis/:id` | Charts, stats, history, Check Now button       |
