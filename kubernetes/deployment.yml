@@ -118,6 +118,11 @@ spec:
         image: etheriannn/capi-worker:23581982006
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: capi-secrets
+        - configMapRef:
+            name: capi-configs
         resources:
           limits:
             cpu: "0.5"
