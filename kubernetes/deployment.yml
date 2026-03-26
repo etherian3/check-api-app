@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: capi-frontend
-        image: etheriannn/capi-frontend:23449134343
+        image: etheriannn/capi-frontend:23581982006
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
         ports:
@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
       - name: capi-backend
-        image: etheriannn/capi-backend:23449134343
+        image: etheriannn/capi-backend:23581982006
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
         envFrom:
@@ -115,7 +115,7 @@ spec:
     spec:
       containers:
       - name: capi-worker
-        image: etheriannn/capi-worker:23449134343
+        image: etheriannn/capi-worker:23581982006
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
         resources:
