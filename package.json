@@ -17,6 +17,6 @@
     "dev:frontend": "npm run dev --workspace=apps/frontend",
     "migrate": "node shared/database/migrate.js",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down" 
   }
 }
