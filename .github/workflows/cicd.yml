@@ -157,9 +157,9 @@ jobs:
 
       - name: Update K8s Manifest
         run: |
-          sed -i 's|:FRONTEND_VERSION|:${{ github.run_id }}|g' kubernetes/deployment.yml
-          sed -i 's|:BACKEND_VERSION|:${{ github.run_id }}|g' kubernetes/deployment.yml
-          sed -i 's|:WORKER_VERSION|:${{ github.run_id }}|g' kubernetes/deployment.yml
+          sed -i 's|capi-frontend:.*|capi-frontend:${{ github.run_id }}|g' kubernetes/deployment.yml
+          sed -i 's|capi-backend:.*|capi-backend:${{ github.run_id }}|g' kubernetes/deployment.yml
+          sed -i 's|capi-worker:.*|capi-worker:${{ github.run_id }}|g' kubernetes/deployment.yml
 
       - name: Commit and push changes
         run: |
